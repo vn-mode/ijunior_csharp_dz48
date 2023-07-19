@@ -1,6 +1,58 @@
 ﻿using System;
 using System.Collections.Generic;
 
+class Program
+{
+    private const string CommandPromptMessage = "Введите команду (add, remove, show, quit):";
+    private const string UnknownCommandMessage = "Неизвестная команда, попробуйте еще раз.";
+    private const string AddCommand = "add";
+    private const string RemoveCommand = "remove";
+    private const string ShowCommand = "show";
+    private const string QuitCommand = "quit";
+
+    static void Main(string[] args)
+    {
+        var aquarium = new Aquarium(3, 10);
+        bool isRunning = true;
+
+        while (isRunning)
+        {
+            isRunning = ExecuteCommand(aquarium);
+            aquarium.Live();
+        }
+    }
+
+    private static bool ExecuteCommand(Aquarium aquarium)
+    {
+        Console.WriteLine(CommandPromptMessage);
+        var command = Console.ReadLine().Trim().ToLower();
+
+        switch (command)
+        {
+            case AddCommand:
+                aquarium.AddFishPrompt();
+                break;
+
+            case RemoveCommand:
+                aquarium.RemoveFishPrompt();
+                break;
+
+            case ShowCommand:
+                aquarium.ShowFishes();
+                break;
+
+            case QuitCommand:
+                return false;
+
+            default:
+                Console.WriteLine(UnknownCommandMessage);
+                break;
+        }
+
+        return true;
+    }
+}
+
 public class Fish
 {
     private string _name;
@@ -35,6 +87,8 @@ public class Aquarium
     private const string FishInfoTemplate = "Имя: {0}, Возраст: {1}";
     private const string FishRemovedMessageTemplate = "Рыба {0} была удалена из аквариума.";
     private const string FishNotFoundMessageTemplate = "Рыба с именем {0} не найдена в аквариуме.";
+    private const string AddFishPromptMessage = "Введите имя рыбы: ";
+    private const string RemoveFishPromptMessage = "Введите имя рыбы для удаления: ";
 
     private readonly int _capacity;
     private readonly int _deathAge;
@@ -44,6 +98,20 @@ public class Aquarium
     {
         _capacity = capacity;
         _deathAge = deathAge;
+    }
+
+    public void AddFishPrompt()
+    {
+        Console.Write(AddFishPromptMessage);
+        var name = Console.ReadLine();
+        AddFish(new Fish(name, 0));
+    }
+
+    public void RemoveFishPrompt()
+    {
+        Console.Write(RemoveFishPromptMessage);
+        var name = Console.ReadLine();
+        RemoveFish(name);
     }
 
     public void AddFish(Fish fish)
@@ -90,71 +158,5 @@ public class Aquarium
         {
             Console.WriteLine(string.Format(FishInfoTemplate, fish.GetName(), fish.GetAge()));
         }
-    }
-}
-
-class Program
-{
-    private const string CommandPromptMessage = "Введите команду (add, remove, show, quit):";
-    private const string AddFishPromptMessage = "Введите имя рыбы: ";
-    private const string RemoveFishPromptMessage = "Введите имя рыбы для удаления: ";
-    private const string UnknownCommandMessage = "Неизвестная команда, попробуйте еще раз.";
-    private const string AddCommand = "add";
-    private const string RemoveCommand = "remove";
-    private const string ShowCommand = "show";
-    private const string QuitCommand = "quit";
-
-    static void Main(string[] args)
-    {
-        var aquarium = new Aquarium(3, 10);
-
-        while (true)
-        {
-            ExecuteCommand(aquarium);
-            aquarium.Live();
-        }
-    }
-
-    private static void ExecuteCommand(Aquarium aquarium)
-    {
-        Console.WriteLine(CommandPromptMessage);
-        var command = Console.ReadLine().Trim().ToLower();
-
-        switch (command)
-        {
-            case AddCommand:
-                AddFish(aquarium);
-                break;
-
-            case RemoveCommand:
-                RemoveFish(aquarium);
-                break;
-
-            case ShowCommand:
-                aquarium.ShowFishes();
-                break;
-
-            case QuitCommand:
-                Environment.Exit(0);
-                break;
-
-            default:
-                Console.WriteLine(UnknownCommandMessage);
-                break;
-        }
-    }
-
-    private static void AddFish(Aquarium aquarium)
-    {
-        Console.Write(AddFishPromptMessage);
-        var name = Console.ReadLine();
-        aquarium.AddFish(new Fish(name, 0));
-    }
-
-    private static void RemoveFish(Aquarium aquarium)
-    {
-        Console.Write(RemoveFishPromptMessage);
-        var name = Console.ReadLine();
-        aquarium.RemoveFish(name);
     }
 }
