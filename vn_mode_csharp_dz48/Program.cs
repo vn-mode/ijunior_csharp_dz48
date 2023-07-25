@@ -12,7 +12,7 @@ class Program
 
     static void Main(string[] args)
     {
-        var aquarium = new Aquarium(3, 10);
+        var aquarium = new Aquarium(3);
         bool isRunning = true;
 
         while (isRunning)
@@ -58,25 +58,30 @@ public class Fish
     private string _name;
     private int _age;
 
-    public Fish(string name, int age)
+    public Fish(string name)
     {
         _name = name;
-        _age = age;
+        _age = 0;
     }
 
-    public string GetName()
+    public string Name
     {
-        return _name;
+        get { return _name; }
     }
 
-    public int GetAge()
+    public int Age
     {
-        return _age;
+        get { return _age; }
     }
 
-    public void AgeIncrease()
+    public void IncrementAge()
     {
         _age++;
+    }
+
+    public bool IsDead()
+    {
+        return _age > 10; // допустим, рыбка умирает, когда ей становится 10
     }
 }
 
@@ -91,20 +96,18 @@ public class Aquarium
     private const string RemoveFishPromptMessage = "Введите имя рыбы для удаления: ";
 
     private readonly int _capacity;
-    private readonly int _deathAge;
     private List<Fish> _fishes = new List<Fish>();
 
-    public Aquarium(int capacity, int deathAge)
+    public Aquarium(int capacity)
     {
         _capacity = capacity;
-        _deathAge = deathAge;
     }
 
     public void AddFishPrompt()
     {
         Console.Write(AddFishPromptMessage);
         var name = Console.ReadLine();
-        AddFish(new Fish(name, 0));
+        AddFish(new Fish(name));
     }
 
     public void RemoveFishPrompt()
@@ -128,7 +131,7 @@ public class Aquarium
 
     public void RemoveFish(string name)
     {
-        if (_fishes.RemoveAll(fish => fish.GetName() == name) > 0)
+        if (_fishes.RemoveAll(fish => fish.Name == name) > 0)
         {
             Console.WriteLine(string.Format(FishRemovedMessageTemplate, name));
         }
@@ -142,11 +145,11 @@ public class Aquarium
     {
         for (int i = _fishes.Count - 1; i >= 0; i--)
         {
-            _fishes[i].AgeIncrease();
+            _fishes[i].IncrementAge();
 
-            if (_fishes[i].GetAge() > _deathAge)
+            if (_fishes[i].IsDead())
             {
-                Console.WriteLine(string.Format(DeathMessageTemplate, _fishes[i].GetName()));
+                Console.WriteLine(string.Format(DeathMessageTemplate, _fishes[i].Name));
                 _fishes.RemoveAt(i);
             }
         }
@@ -156,7 +159,7 @@ public class Aquarium
     {
         foreach (var fish in _fishes)
         {
-            Console.WriteLine(string.Format(FishInfoTemplate, fish.GetName(), fish.GetAge()));
+            Console.WriteLine(string.Format(FishInfoTemplate, fish.Name, fish.Age));
         }
     }
 }
