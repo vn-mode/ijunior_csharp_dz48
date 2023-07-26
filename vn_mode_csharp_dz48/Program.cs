@@ -1,6 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
 
+class Program
+{
+    private static readonly string AddCommand = "add";
+    private static readonly string RemoveCommand = "remove";
+    private static readonly string ShowCommand = "show";
+    private static readonly string QuitCommand = "quit";
+
+    static void Main(string[] args)
+    {
+        var aquarium = new Aquarium(3);
+
+        while (aquarium.Interact())
+        {
+            aquarium.Live();
+            aquarium.RemoveDeadFishes();
+        }
+    }
+}
+
 public class Fish
 {
     public string Name { get; private set; }
@@ -22,12 +41,33 @@ public class Fish
 
 public class Aquarium
 {
+    private const string AddCommand = "add";
+    private const string RemoveCommand = "remove";
+    private const string ShowCommand = "show";
+    private const string QuitCommand = "quit";
+
     private readonly int _capacity;
-    private List<Fish> _fishes = new List<Fish>();
+    private List<Fish> _fishes;
 
     public Aquarium(int capacity)
     {
         _capacity = capacity;
+        _fishes = new List<Fish>();
+    }
+
+    public void Live()
+    {
+        _fishes.ForEach(fish => fish.IncrementAge());
+    }
+
+    public void ShowFishes()
+    {
+        _fishes.ForEach(fish => Console.WriteLine($"Имя: {fish.Name}, Возраст: {fish.Age}"));
+    }
+
+    public void RemoveDeadFishes()
+    {
+        _fishes.RemoveAll(fish => fish.IsDead);
     }
 
     public bool Interact()
@@ -37,43 +77,26 @@ public class Aquarium
 
         switch (command)
         {
-            case "add":
+            case AddCommand:
                 AddFishPrompt();
                 break;
 
-            case "remove":
+            case RemoveCommand:
                 RemoveFishPrompt();
                 break;
 
-            case "show":
+            case ShowCommand:
                 ShowFishes();
                 break;
 
-            case "quit":
+            case QuitCommand:
                 return false;
 
             default:
                 Console.WriteLine("Неизвестная команда, попробуйте еще раз.");
                 break;
         }
-
         return true;
-    }
-
-    public void Live()
-    {
-        foreach (var fish in _fishes)
-        {
-            fish.IncrementAge();
-        }
-    }
-
-    public void ShowFishes()
-    {
-        foreach (var fish in _fishes)
-        {
-            Console.WriteLine($"Имя: {fish.Name}, Возраст: {fish.Age}");
-        }
     }
 
     private void AddFishPrompt()
@@ -86,56 +109,22 @@ public class Aquarium
 
         Console.Write("Введите имя рыбы: ");
         var name = Console.ReadLine();
-        AddFish(new Fish(name));
-    }
-
-    private void AddFish(Fish fish)
-    {
-        _fishes.Add(fish);
+        _fishes.Add(new Fish(name));
     }
 
     private void RemoveFishPrompt()
     {
         Console.Write("Введите имя рыбы для удаления: ");
         var name = Console.ReadLine();
-        RemoveFish(name);
-    }
+        var removedCount = _fishes.RemoveAll(fish => fish.Name == name);
 
-    private void RemoveFish(string name)
-    {
-        if (_fishes.RemoveAll(fish => fish.Name == name) > 0)
+        if (removedCount > 0)
         {
             Console.WriteLine($"Рыба {name} была удалена из аквариума.");
         }
         else
         {
             Console.WriteLine($"Рыба с именем {name} не найдена в аквариуме.");
-        }
-    }
-
-    public void RemoveDeadFishes()
-    {
-        for (int i = _fishes.Count - 1; i >= 0; i--)
-        {
-            if (_fishes[i].IsDead)
-            {
-                Console.WriteLine($"Рыба {_fishes[i].Name} умерла от старости.");
-                _fishes.RemoveAt(i);
-            }
-        }
-    }
-}
-
-class Program
-{
-    static void Main(string[] args)
-    {
-        var aquarium = new Aquarium(3);
-
-        while (aquarium.Interact())
-        {
-            aquarium.Live();
-            aquarium.RemoveDeadFishes();
         }
     }
 }
