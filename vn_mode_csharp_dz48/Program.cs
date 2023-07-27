@@ -1,41 +1,30 @@
 ﻿using System;
 using System.Collections.Generic;
 
-class Program
-{
-    private static readonly string AddCommand = "add";
-    private static readonly string RemoveCommand = "remove";
-    private static readonly string ShowCommand = "show";
-    private static readonly string QuitCommand = "quit";
-
-    static void Main(string[] args)
-    {
-        var aquarium = new Aquarium(3);
-
-        while (aquarium.Interact())
-        {
-            aquarium.Live();
-            aquarium.RemoveDeadFishes();
-        }
-    }
-}
-
 public class Fish
 {
+    private const int MaxAge = 10;
+
+    private int _age;
+
     public string Name { get; private set; }
-    public int Age { get; private set; }
+    public int Age
+    {
+        get { return _age; }
+        private set { _age = value; }
+    }
+
+    public bool IsDead => _age > MaxAge;
 
     public Fish(string name)
     {
         Name = name;
-        Age = 0;
+        _age = 0;
     }
-
-    public bool IsDead => Age > 10;
 
     public void IncrementAge()
     {
-        Age++;
+        _age++;
     }
 }
 
@@ -55,19 +44,33 @@ public class Aquarium
         _fishes = new List<Fish>();
     }
 
-    public void Live()
+    private void AddFish()
     {
-        _fishes.ForEach(fish => fish.IncrementAge());
+        if (_fishes.Count >= _capacity)
+        {
+            Console.WriteLine("Аквариум полон, нельзя добавить еще одну рыбу.");
+            return;
+        }
+
+        Console.Write("Введите имя рыбы: ");
+        var name = Console.ReadLine();
+        _fishes.Add(new Fish(name));
     }
 
-    public void ShowFishes()
+    private void RemoveFish()
     {
-        _fishes.ForEach(fish => Console.WriteLine($"Имя: {fish.Name}, Возраст: {fish.Age}"));
-    }
+        Console.Write("Введите имя рыбы для удаления: ");
+        var name = Console.ReadLine();
+        var removedCount = _fishes.RemoveAll(fish => fish.Name == name);
 
-    public void RemoveDeadFishes()
-    {
-        _fishes.RemoveAll(fish => fish.IsDead);
+        if (removedCount > 0)
+        {
+            Console.WriteLine($"Рыба {name} была удалена из аквариума.");
+        }
+        else
+        {
+            Console.WriteLine($"Рыба с именем {name} не найдена в аквариуме.");
+        }
     }
 
     public bool Interact()
@@ -78,11 +81,11 @@ public class Aquarium
         switch (command)
         {
             case AddCommand:
-                AddFishPrompt();
+                AddFish();
                 break;
 
             case RemoveCommand:
-                RemoveFishPrompt();
+                RemoveFish();
                 break;
 
             case ShowCommand:
@@ -99,32 +102,32 @@ public class Aquarium
         return true;
     }
 
-    private void AddFishPrompt()
+    public void Live()
     {
-        if (_fishes.Count >= _capacity)
-        {
-            Console.WriteLine("Аквариум полон, нельзя добавить еще одну рыбу.");
-            return;
-        }
-
-        Console.Write("Введите имя рыбы: ");
-        var name = Console.ReadLine();
-        _fishes.Add(new Fish(name));
+        _fishes.ForEach(fish => fish.IncrementAge());
     }
 
-    private void RemoveFishPrompt()
+    public void ShowFishes()
     {
-        Console.Write("Введите имя рыбы для удаления: ");
-        var name = Console.ReadLine();
-        var removedCount = _fishes.RemoveAll(fish => fish.Name == name);
+        _fishes.ForEach(fish => Console.WriteLine($"Имя: {fish.Name}, Возраст: {fish.Age}"));
+    }
 
-        if (removedCount > 0)
+    public void RemoveDeadFishes()
+    {
+        _fishes.RemoveAll(fish => fish.IsDead);
+    }
+}
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        var aquarium = new Aquarium(3);
+
+        while (aquarium.Interact())
         {
-            Console.WriteLine($"Рыба {name} была удалена из аквариума.");
-        }
-        else
-        {
-            Console.WriteLine($"Рыба с именем {name} не найдена в аквариуме.");
+            aquarium.Live();
+            aquarium.RemoveDeadFishes();
         }
     }
 }
