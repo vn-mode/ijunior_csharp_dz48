@@ -1,26 +1,36 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        var aquarium = new Aquarium(3);
+
+        while (true)
+        {
+            aquarium.Interact();
+            aquarium.Live();
+            aquarium.RemoveDeadFishes();
+        }
+    }
+}
 
 public class Fish
 {
-    private const int MaxAge = 10;
-
+    private const int _MaxAge = 10;
     private int _age;
-
-    public string Name { get; private set; }
-    public int Age
-    {
-        get { return _age; }
-        private set { _age = value; }
-    }
-
-    public bool IsDead => _age > MaxAge;
 
     public Fish(string name)
     {
         Name = name;
         _age = 0;
     }
+
+    public string Name { get; private set; }
+    public int Age => _age;
+    public bool IsDead => _age > _MaxAge;
 
     public void IncrementAge()
     {
@@ -30,104 +40,138 @@ public class Fish
 
 public class Aquarium
 {
-    private const string AddCommand = "add";
-    private const string RemoveCommand = "remove";
-    private const string ShowCommand = "show";
-    private const string QuitCommand = "quit";
-
-    private readonly int _capacity;
-    private List<Fish> _fishes;
+    private readonly int capacity;
+    private List<Fish> fishes;
 
     public Aquarium(int capacity)
     {
-        _capacity = capacity;
-        _fishes = new List<Fish>();
+        this.capacity = capacity;
+        fishes = new List<Fish>();
     }
 
-    private void AddFish()
+    public bool HasSpace()
     {
-        if (_fishes.Count >= _capacity)
-        {
-            Console.WriteLine("Аквариум полон, нельзя добавить еще одну рыбу.");
-            return;
-        }
-
-        Console.Write("Введите имя рыбы: ");
-        var name = Console.ReadLine();
-        _fishes.Add(new Fish(name));
+        return fishes.Count < capacity;
     }
 
-    private void RemoveFish()
+    public void AddFish(Fish fish)
     {
-        Console.Write("Введите имя рыбы для удаления: ");
-        var name = Console.ReadLine();
-        var removedCount = _fishes.RemoveAll(fish => fish.Name == name);
-
-        if (removedCount > 0)
-        {
-            Console.WriteLine($"Рыба {name} была удалена из аквариума.");
-        }
-        else
-        {
-            Console.WriteLine($"Рыба с именем {name} не найдена в аквариуме.");
-        }
+        fishes.Add(fish);
     }
 
-    public bool Interact()
+    public bool RemoveFish(string name)
     {
-        Console.WriteLine("Введите команду (add, remove, show, quit):");
-        var command = Console.ReadLine().Trim().ToLower();
+        var fish = fishes.FirstOrDefault(f => f.Name == name);
 
-        switch (command)
+        if (fish != null)
         {
-            case AddCommand:
-                AddFish();
-                break;
-
-            case RemoveCommand:
-                RemoveFish();
-                break;
-
-            case ShowCommand:
-                ShowFishes();
-                break;
-
-            case QuitCommand:
-                return false;
-
-            default:
-                Console.WriteLine("Неизвестная команда, попробуйте еще раз.");
-                break;
+            fishes.Remove(fish);
+            return true;
         }
-        return true;
-    }
-
-    public void Live()
-    {
-        _fishes.ForEach(fish => fish.IncrementAge());
+        return false;
     }
 
     public void ShowFishes()
     {
-        _fishes.ForEach(fish => Console.WriteLine($"Имя: {fish.Name}, Возраст: {fish.Age}"));
+        foreach (var fish in fishes)
+        {
+            Console.WriteLine($"Имя: {fish.Name}, Возраст: {fish.Age}");
+        }
+    }
+
+    public void Interact()
+    {
+        const string AddCommand = "add";
+        const string RemoveCommand = "remove";
+        const string ShowCommand = "show";
+        const string QuitCommand = "quit";
+
+        Console.WriteLine("Введите команду (add, remove, show, quit):");
+        string input = Console.ReadLine().Trim().ToLower();
+
+        switch (input)
+        {
+            case AddCommand:
+                AddFishCommand();
+                break;
+
+            case RemoveCommand:
+                RemoveFishCommand();
+                break;
+
+            case ShowCommand:
+                ShowFishCommand();
+                break;
+
+            case QuitCommand:
+                Quit();
+                break;
+
+            default:
+                UnknownCommand();
+                break;
+        }
+    }
+
+    private void AddFishCommand()
+    {
+        if (HasSpace())
+        {
+            Console.Write("Введите имя рыбы: ");
+            var name = Console.ReadLine();
+            AddFish(new Fish(name));
+        }
+        else
+        {
+            Console.WriteLine("Аквариум полон, нельзя добавить еще одну рыбу.");
+        }
+    }
+
+    private void RemoveFishCommand()
+    {
+        Console.Write("Введите имя рыбы для удаления: ");
+        var nameToRemove = Console.ReadLine();
+
+        if (RemoveFish(nameToRemove))
+        {
+            Console.WriteLine($"Рыба {nameToRemove} была удалена из аквариума.");
+        }
+        else
+        {
+            Console.WriteLine($"Рыба с именем {nameToRemove} не найдена в аквариуме.");
+        }
+    }
+
+    private void ShowFishCommand()
+    {
+        ShowFishes();
+    }
+
+    private void Quit()
+    {
+        Environment.Exit(0);
+    }
+
+    private void UnknownCommand()
+    {
+        Console.WriteLine("Неизвестная команда, попробуйте еще раз.");
+    }
+
+    public void Live()
+    {
+        foreach (var fish in fishes)
+        {
+            fish.IncrementAge();
+        }
     }
 
     public void RemoveDeadFishes()
     {
-        _fishes.RemoveAll(fish => fish.IsDead);
-    }
-}
+        var deadFishes = fishes.Where(fish => fish.IsDead).ToList();
 
-class Program
-{
-    static void Main(string[] args)
-    {
-        var aquarium = new Aquarium(3);
-
-        while (aquarium.Interact())
+        foreach (var deadFish in deadFishes)
         {
-            aquarium.Live();
-            aquarium.RemoveDeadFishes();
+            fishes.Remove(deadFish);
         }
     }
 }
