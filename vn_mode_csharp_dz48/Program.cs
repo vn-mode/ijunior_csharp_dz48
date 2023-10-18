@@ -23,15 +23,15 @@ public class Fish
     private const int MaxAge = 10;
     private int _age;
 
-    public string Name { get; private set; }
-    public int Age => _age;
-    public bool IsDead => (_age > MaxAge);
-
     public Fish(string name)
     {
         Name = name;
         _age = 0;
     }
+
+    public string Name { get; private set; }
+    public int Age => _age;
+    public bool IsDead => (_age > MaxAge);
 
     public void IncrementAge()
     {
