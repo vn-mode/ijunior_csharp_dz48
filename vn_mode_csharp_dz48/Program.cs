@@ -6,9 +6,10 @@ class Program
 {
     static void Main(string[] args)
     {
-        var aquarium = new Aquarium(3);
+        bool isRunning = true;
+        Aquarium aquarium = new Aquarium(3);
 
-        while (true)
+        while (isRunning)
         {
             aquarium.Interact();
             aquarium.Live();
@@ -19,18 +20,18 @@ class Program
 
 public class Fish
 {
-    private const int _MaxAge = 10;
+    private const int MaxAge = 10;
     private int _age;
+
+    public string Name { get; private set; }
+    public int Age => _age;
+    public bool IsDead => (_age > MaxAge);
 
     public Fish(string name)
     {
         Name = name;
         _age = 0;
     }
-
-    public string Name { get; private set; }
-    public int Age => _age;
-    public bool IsDead => _age > _MaxAge;
 
     public void IncrementAge()
     {
@@ -40,40 +41,36 @@ public class Fish
 
 public class Aquarium
 {
-    private readonly int capacity;
+    private readonly int _capacity;
     private List<Fish> fishes;
 
     public Aquarium(int capacity)
     {
-        this.capacity = capacity;
+        _capacity = capacity;
         fishes = new List<Fish>();
     }
 
-    public bool HasSpace()
+    private bool HasSpace()
     {
-        return fishes.Count < capacity;
+        return fishes.Count < _capacity;
     }
 
-    public void AddFish(Fish fish)
+    private bool RemoveFish(string name)
     {
-        fishes.Add(fish);
-    }
-
-    public bool RemoveFish(string name)
-    {
-        var fish = fishes.FirstOrDefault(f => f.Name == name);
+        Fish fish = fishes.FirstOrDefault(fish => fish.Name == name);
 
         if (fish != null)
         {
             fishes.Remove(fish);
             return true;
         }
+
         return false;
     }
 
-    public void ShowFishes()
+    private void ShowFishes()
     {
-        foreach (var fish in fishes)
+        foreach (Fish fish in fishes)
         {
             Console.WriteLine($"Имя: {fish.Name}, Возраст: {fish.Age}");
         }
@@ -87,39 +84,42 @@ public class Aquarium
         const string QuitCommand = "quit";
 
         Console.WriteLine("Введите команду (add, remove, show, quit):");
+
         string input = Console.ReadLine().Trim().ToLower();
 
         switch (input)
         {
             case AddCommand:
-                AddFishCommand();
+                AddFish();
                 break;
 
             case RemoveCommand:
-                RemoveFishCommand();
+                RemoveFish();
                 break;
 
             case ShowCommand:
-                ShowFishCommand();
+                ShowFishes();
                 break;
 
             case QuitCommand:
-                Quit();
+                Environment.Exit(0);
                 break;
 
             default:
-                UnknownCommand();
+                Console.WriteLine("Неизвестная команда, попробуйте еще раз.");
                 break;
         }
     }
 
-    private void AddFishCommand()
+    private void AddFish()
     {
         if (HasSpace())
         {
             Console.Write("Введите имя рыбы: ");
-            var name = Console.ReadLine();
-            AddFish(new Fish(name));
+
+            string name = Console.ReadLine();
+
+            fishes.Add(new Fish(name));
         }
         else
         {
@@ -127,10 +127,11 @@ public class Aquarium
         }
     }
 
-    private void RemoveFishCommand()
+    private void RemoveFish()
     {
         Console.Write("Введите имя рыбы для удаления: ");
-        var nameToRemove = Console.ReadLine();
+
+        string nameToRemove = Console.ReadLine();
 
         if (RemoveFish(nameToRemove))
         {
@@ -142,24 +143,9 @@ public class Aquarium
         }
     }
 
-    private void ShowFishCommand()
-    {
-        ShowFishes();
-    }
-
-    private void Quit()
-    {
-        Environment.Exit(0);
-    }
-
-    private void UnknownCommand()
-    {
-        Console.WriteLine("Неизвестная команда, попробуйте еще раз.");
-    }
-
     public void Live()
     {
-        foreach (var fish in fishes)
+        foreach (Fish fish in fishes)
         {
             fish.IncrementAge();
         }
@@ -167,9 +153,9 @@ public class Aquarium
 
     public void RemoveDeadFishes()
     {
-        var deadFishes = fishes.Where(fish => fish.IsDead).ToList();
+        List<Fish> deadFishes = fishes.Where(fish => fish.IsDead).ToList();
 
-        foreach (var deadFish in deadFishes)
+        foreach (Fish deadFish in deadFishes)
         {
             fishes.Remove(deadFish);
         }
