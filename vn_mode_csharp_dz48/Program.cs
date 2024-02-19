@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 
-class Program
+public class Program
 {
     static void Main(string[] args)
     {
@@ -50,31 +49,7 @@ public class Aquarium
         fishes = new List<Fish>();
     }
 
-    private bool HasSpace()
-    {
-        return fishes.Count < _capacity;
-    }
-
-    private bool RemoveFish(string name)
-    {
-        Fish fish = fishes.FirstOrDefault(fish => fish.Name == name);
-
-        if (fish != null)
-        {
-            fishes.Remove(fish);
-            return true;
-        }
-
-        return false;
-    }
-
-    private void ShowFishes()
-    {
-        foreach (Fish fish in fishes)
-        {
-            Console.WriteLine($"Имя: {fish.Name}, Возраст: {fish.Age}");
-        }
-    }
+    public bool HasSpace => fishes.Count < _capacity;
 
     public void Interact()
     {
@@ -111,9 +86,28 @@ public class Aquarium
         }
     }
 
+    public void Live()
+    {
+        foreach (Fish fish in fishes)
+        {
+            fish.IncrementAge();
+        }
+    }
+
+    public void RemoveDeadFishes()
+    {
+        for (int i = fishes.Count - 1; i >= 0; i--)
+        {
+            if (fishes[i].IsDead)
+            {
+                fishes.RemoveAt(i);
+            }
+        }
+    }
+
     private void AddFish()
     {
-        if (HasSpace())
+        if (HasSpace)
         {
             Console.Write("Введите имя рыбы: ");
 
@@ -143,21 +137,24 @@ public class Aquarium
         }
     }
 
-    public void Live()
+    private bool RemoveFish(string name)
     {
         foreach (Fish fish in fishes)
         {
-            fish.IncrementAge();
+            if (fish.Name == name)
+            {
+                fishes.Remove(fish);
+                return true;
+            }
         }
+        return false;
     }
 
-    public void RemoveDeadFishes()
+    private void ShowFishes()
     {
-        List<Fish> deadFishes = fishes.Where(fish => fish.IsDead).ToList();
-
-        foreach (Fish deadFish in deadFishes)
+        foreach (Fish fish in fishes)
         {
-            fishes.Remove(deadFish);
+            Console.WriteLine($"Имя: {fish.Name}, Возраст: {fish.Age}");
         }
     }
 }
