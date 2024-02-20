@@ -5,21 +5,14 @@ public class Program
 {
     static void Main(string[] args)
     {
-        bool isRunning = true;
         Aquarium aquarium = new Aquarium(3);
-
-        while (isRunning)
-        {
-            aquarium.Interact();
-            aquarium.Live();
-            aquarium.RemoveDeadFishes();
-        }
+        aquarium.Run();
     }
 }
 
 public class Fish
 {
-    private const int MaxAge = 10;
+    private int _maxAge = 10;
     private int _age;
 
     public Fish(string name)
@@ -30,7 +23,7 @@ public class Fish
 
     public string Name { get; private set; }
     public int Age => _age;
-    public bool IsDead => (_age > MaxAge);
+    public bool IsDead => (_age > _maxAge);
 
     public void IncrementAge()
     {
@@ -41,15 +34,26 @@ public class Fish
 public class Aquarium
 {
     private readonly int _capacity;
-    private List<Fish> fishes;
+    private List<Fish> _fishes;
+    private bool isRunning = true;
 
     public Aquarium(int capacity)
     {
         _capacity = capacity;
-        fishes = new List<Fish>();
+        _fishes = new List<Fish>();
     }
 
-    public bool HasSpace => fishes.Count < _capacity;
+    public bool HasSpace => _fishes.Count < _capacity;
+
+    public void Run()
+    {
+        while (isRunning)
+        {
+            Interact();
+            Live();
+            RemoveDeadFishes();
+        }
+    }
 
     public void Interact()
     {
@@ -58,7 +62,7 @@ public class Aquarium
         const string ShowCommand = "show";
         const string QuitCommand = "quit";
 
-        Console.WriteLine("Введите команду (add, remove, show, quit):");
+        Console.WriteLine($"Введите команду ({AddCommand}, {RemoveCommand}, {ShowCommand}, {QuitCommand}):");
 
         string input = Console.ReadLine().Trim().ToLower();
 
@@ -77,7 +81,7 @@ public class Aquarium
                 break;
 
             case QuitCommand:
-                Environment.Exit(0);
+                isRunning = false;
                 break;
 
             default:
@@ -88,7 +92,7 @@ public class Aquarium
 
     public void Live()
     {
-        foreach (Fish fish in fishes)
+        foreach (Fish fish in _fishes)
         {
             fish.IncrementAge();
         }
@@ -96,11 +100,11 @@ public class Aquarium
 
     public void RemoveDeadFishes()
     {
-        for (int i = fishes.Count - 1; i >= 0; i--)
+        for (int i = _fishes.Count - 1; i >= 0; i--)
         {
-            if (fishes[i].IsDead)
+            if (_fishes[i].IsDead)
             {
-                fishes.RemoveAt(i);
+                _fishes.RemoveAt(i);
             }
         }
     }
@@ -113,7 +117,7 @@ public class Aquarium
 
             string name = Console.ReadLine();
 
-            fishes.Add(new Fish(name));
+            _fishes.Add(new Fish(name));
         }
         else
         {
@@ -127,7 +131,17 @@ public class Aquarium
 
         string nameToRemove = Console.ReadLine();
 
-        if (RemoveFish(nameToRemove))
+        bool fishRemoved = false;
+        for (int i = _fishes.Count - 1; i >= 0; i--)
+        {
+            if (_fishes[i].Name == nameToRemove)
+            {
+                _fishes.RemoveAt(i);
+                fishRemoved = true;
+            }
+        }
+
+        if (fishRemoved)
         {
             Console.WriteLine($"Рыба {nameToRemove} была удалена из аквариума.");
         }
@@ -137,22 +151,9 @@ public class Aquarium
         }
     }
 
-    private bool RemoveFish(string name)
-    {
-        foreach (Fish fish in fishes)
-        {
-            if (fish.Name == name)
-            {
-                fishes.Remove(fish);
-                return true;
-            }
-        }
-        return false;
-    }
-
     private void ShowFishes()
     {
-        foreach (Fish fish in fishes)
+        foreach (Fish fish in _fishes)
         {
             Console.WriteLine($"Имя: {fish.Name}, Возраст: {fish.Age}");
         }
